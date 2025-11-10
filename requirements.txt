@@ -7,3 +7,6 @@ serpapi
 google-search-results
 beautifulsoup4
 gtts
+SpeechRecognition
+pydub
+requests
