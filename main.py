@@ -28,11 +28,28 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+private_key = st.secrets["gsheets"]["private_key"].replace('\\n', '\n')
 # ... (other core imports)
 SERPAPI_KEY = "83f7b9c91b6f9c1f57f939f8e49f5a218e7ac0950e5d19eee0adaf5029931101" 
 os.environ["SERPAPI_KEY"] = SERPAPI_KEY
 os.environ["GEMINI_API_KEY"] = "AIzaSyCo24il1vGTZZeIpT75Rr4WZzy7TR0Mhck"
+creds = {
+    "type": "service_account",
+    "project_id": "agentswarm-mvp",  # Ya jo bhi aapka project ID hai
+    "private_key": private_key,       # Nayi, Saaf Key
+    "client_email": st.secrets["gsheets"]["client_email"],
+    "token_uri": "https://oauth2.googleapis.com/token",
+}
+try:
+    # Service account se connect karein
+    gc = gspread.service_account_from_dict(creds)
+    # Baaki ka code jahan sheet open hoti hai
+    spreadsheet_id = st.secrets["gsheets"]["MASTER_SHEET_ID"]
+    spreadsheet = gc.open_by_key(spreadsheet_id)
+    st.success("Google Sheets Connected Successfully!")
 
+except Exception as e:
+    st.error(f"Google Sheets Connection Error: {e}")
 
 from notification import (
     send_telegram_notification,
