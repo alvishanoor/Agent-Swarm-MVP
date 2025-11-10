@@ -5,3 +5,4 @@ google-genai
 pandas
 serpapi
 google-search-results
+beautifulsoup4
