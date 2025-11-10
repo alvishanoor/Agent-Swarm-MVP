@@ -32,27 +32,37 @@ from email.mime.multipart import MIMEMultipart
 SERPAPI_KEY = "83f7b9c91b6f9c1f57f939f8e49f5a218e7ac0950e5d19eee0adaf5029931101" 
 os.environ["SERPAPI_KEY"] = SERPAPI_KEY
 os.environ["GEMINI_API_KEY"] = "AIzaSyCo24il1vGTZZeIpT75Rr4WZzy7TR0Mhck"
-private_key = st.secrets["gsheets"]["private_key"].replace('\\n', '\n')
-creds = {
-    "type": "service_account",
-    "project_id": "agentswarm-mvp",  # Ya jo bhi aapka project ID hai
-    "private_key": private_key,       # Nayi, Saaf Key
-    "client_email": st.secrets["gspread"]["client_email"],
-    "token_uri": "https://oauth2.googleapis.com/token",
-}
-try:
-    # Service account se connect karein
-    gc = gspread.service_account_from_dict(creds)
-    # Baaki ka code jahan sheet open hoti hai
-    spreadsheet_id = st.secrets["gsheets"]["MASTER_SHEET_ID"]
-    spreadsheet = gc.open_by_key(spreadsheet_id)
-    st.success("Google Sheets Connected Successfully!")
 
-except Exception as e:
-    st.error(f"Google Sheets Connection Error: {e}")
-    # Fallback to Mock Data Mode
-    st.info("Running in Mock Data Mode.")
+@st.cache_resource(ttl=3600)
+def get_gspread_client():
+   if "gsheets" not in st.secrets:
+       st.error("Google Sheets Secrets not found. Falling back to Mock Data Mode.")
+       return None
+   try:
+        # Private Key ko Streamlit secrets se load karein aur line breaks theek karein
+        private_key = st.secrets["gsheets"]["private_key"].replace('\\n', '\n')
+        
+        # Credentials dictionary
+        creds = {
+            "type": "service_account",
+            "project_id": "agentswarm-mvp",
+            "private_key": private_key,
+            "client_email": st.secrets["gsheets"]["client_email"],
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+        
+        gc = gspread.service_account_from_dict(creds)
+        spreadsheet_id = st.secrets["gsheets"]["MASTER_SHEET_ID"]
+        spreadsheet = gc.open_by_key(spreadsheet_id)
+        st.success("Google Sheets Connected Successfully!")
+        return spreadsheet  # Spreadsheet object return karein
+        
+   except Exception as e:
+        st.error(f"Google Sheets Connection Error: {e}")
+        return None
 
+# Top Level par bas function ko call karein:
+spreadsheet = get_gspread_client()
 from notification import (
     send_telegram_notification,
     send_email_notification,
