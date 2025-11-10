@@ -1,5 +1,4 @@
 import gspread
-
 import streamlit as st
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -28,16 +27,17 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-private_key = st.secrets["gsheets"]["private_key"].replace('\\n', '\n')
 # ... (other core imports)
+
 SERPAPI_KEY = "83f7b9c91b6f9c1f57f939f8e49f5a218e7ac0950e5d19eee0adaf5029931101" 
 os.environ["SERPAPI_KEY"] = SERPAPI_KEY
 os.environ["GEMINI_API_KEY"] = "AIzaSyCo24il1vGTZZeIpT75Rr4WZzy7TR0Mhck"
+private_key = st.secrets["gsheets"]["private_key"].replace('\\n', '\n')
 creds = {
     "type": "service_account",
     "project_id": "agentswarm-mvp",  # Ya jo bhi aapka project ID hai
     "private_key": private_key,       # Nayi, Saaf Key
-    "client_email": st.secrets["gsheets"]["client_email"],
+    "client_email": st.secrets["gspread"]["client_email"],
     "token_uri": "https://oauth2.googleapis.com/token",
 }
 try:
@@ -50,6 +50,8 @@ try:
 
 except Exception as e:
     st.error(f"Google Sheets Connection Error: {e}")
+    # Fallback to Mock Data Mode
+    st.info("Running in Mock Data Mode.")
 
 from notification import (
     send_telegram_notification,
@@ -70,7 +72,7 @@ st.set_page_config(layout="wide")
 # ----------------------------------------------------
 
 # --- Configuration (Update these environment variables/files) ---
-SERVICE_ACCOUNT_FILE = 'service_account_key.json'
+SERVICE_ACCOUNT_FILE = 'agentswarm-mvp-ff5f0ed199ed.json'
 SPREADSHEET_NAME = 'Agent Swarm MVP Tasks'
 TASKS_SHEET_NAME = 'Master Tasks'
 XP_LEDGER_SHEET_NAME = 'XP Ledger'
