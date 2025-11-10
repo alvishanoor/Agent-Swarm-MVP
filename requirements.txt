@@ -10,3 +10,4 @@ gtts
 SpeechRecognition
 pydub
 requests
+python-dotenv
